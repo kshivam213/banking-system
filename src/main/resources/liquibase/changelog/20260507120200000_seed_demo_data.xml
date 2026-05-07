@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="20260507120200000_seed_demo_user" author="banking-system">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM public.users WHERE email = 'demo@bank.local'
+            </sqlCheck>
+        </preConditions>
+
+        <insert tableName="users" schemaName="public">
+            <column name="email" value="demo@bank.local"/>
+            <column name="pin_hash" value="$2a$10$9O5L7wKnuAZLJMU45Ilz8OdkAjMj1luFCoG7HdPmIGawHXwETKCSy"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="20260507120200001_seed_demo_account" author="banking-system">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT COUNT(*) FROM public.users WHERE email = 'demo@bank.local'
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM public.accounts a
+                JOIN public.users u ON u.id = a.user_id
+                WHERE u.email = 'demo@bank.local'
+            </sqlCheck>
+        </preConditions>
+
+        <sql>
+            INSERT INTO public.accounts (user_id, balance, currency, version)
+            SELECT id, 0.00, 'USD', 0 FROM public.users WHERE email = 'demo@bank.local'
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+
